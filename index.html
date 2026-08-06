@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام بلاغات تحويل الطلبات</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --error-color: #ef4444;
+      --success-color: #10b981;
+      --border-color: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Tajawal', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 650px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 1.6rem;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .nav-btn {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn.active {
+      background: var(--primary-color);
+      color: #fff;
+      border-color: var(--primary-color);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      border: 1px solid var(--border-color);
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .form-group input, 
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus, 
+    .form-group textarea:focus {
+      border-color: var(--primary-color);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .submit-btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .submit-btn:disabled {
+      background-color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    .alert {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .alert-error {
+      background-color: #fef2f2;
+      color: var(--error-color);
+      border: 1px solid #fecaca;
+    }
+
+    .alert-success {
+      background-color: #ecfdf5;
+      color: var(--success-color);
+      border: 1px solid #a7f3d0;
+    }
+
+    .reports-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .report-item {
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--border-color);
+    }
+
+    .report-order-id {
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .report-date {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .report-problem {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: var(--text-main);
+    }
+
+    .loading, .empty-state {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>تقديم بلاغات تحويل الطلبات</h1>
+      <p>نظام تسجيل المشاكل الناتجة عن تحويل الطلبات من قبل السائقين</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn active" id="btn-tab-form" onclick="switchTab('form')">تقديم بلاغ</button>
+      <button class="nav-btn" id="btn-tab-reports" onclick="switchTab('reports')">عرض كل البلاغات</button>
+    </div>
+
+    <div id="alert-box" class="alert"></div>
+
+    <!-- قسم تقديم بلاغ -->
+    <div id="section-form" class="card">
+      <form id="reportForm">
+        <div class="form-group">
+          <label for="orderId">رقم الطلب</label>
+          <input type="text" id="orderId" placeholder="أدخل رقم الطلب هنا..." required>
+        </div>
+
+        <div class="form-group">
+          <label for="problem">تفاصيل المشكلة</label>
+          <textarea id="problem" placeholder="اكتب تفاصيل المشكلة المترتبة عن تحويل الطلب..." required></textarea>
+        </div>
+
+        <button type="submit" id="submitBtn" class="submit-btn">إرسال البلاغ</button>
+      </form>
+    </div>
+
+    <!-- قسم عرض البلاغات -->
+    <div id="section-reports" class="card hidden">
+      <div id="reportsContainer" class="reports-list">
+        <div class="loading">جاري تحميل البلاغات...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxFC5h9z_vWpx6i-Y8BQ0N7P8R46olnZ0QVLXxklIwcnosPKfBTMwrlU51BSPb9HcXQnA/exec";
+
+    function switchTab(tab) {
+      const formSection = document.getElementById('section-form');
+      const reportsSection = document.getElementById('section-reports');
+      const btnForm = document.getElementById('btn-tab-form');
+      const btnReports = document.getElementById('btn-tab-reports');
+      hideAlert();
+
+      if (tab === 'form') {
+        formSection.classList.remove('hidden');
+        reportsSection.classList.add('hidden');
+        btnForm.classList.add('active');
+        btnReports.classList.remove('active');
+      } else {
+        formSection.classList.add('hidden');
+        reportsSection.classList.remove('hidden');
+        btnForm.classList.remove('active');
+        btnReports.classList.add('active');
+        fetchReports();
+      }
+    }
+
+    function showAlert(message, type) {
+      const alertBox = document.getElementById('alert-box');
+      alertBox.textContent = message;
+      alertBox.className = `alert alert-${type}`;
+      alertBox.style.display = 'block';
+    }
+
+    function hideAlert() {
+      const alertBox = document.getElementById('alert-box');
+      alertBox.style.display = 'none';
+    }
+
+    document.getElementById('reportForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      hideAlert();
+
+      const orderId = document.getElementById('orderId').value.trim();
+      const problem = document.getElementById('problem').value.trim();
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (!orderId || !problem) {
+        showAlert('يرجى ملء جميع الحقول المطلوبة', 'error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'جاري الإرسال...';
+
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({ orderId, problem })
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          showAlert(result.message, 'success');
+          document.getElementById('reportForm').reset();
+        } else {
+          showAlert(result.message, 'error');
+        }
+      } catch (error) {
+        showAlert('حدث خطأ أثناء الاتصال بالسيرفر. يرجى المحاولة لاحقاً.', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'إرسال البلاغ';
+      }
+    });
+
+    async function fetchReports() {
+      const container = document.getElementById('reportsContainer');
+      container.innerHTML = '<div class="loading">جاري تحميل البلاغات...</div>';
+
+      try {
+        const response = await fetch(SCRIPT_URL);
+        const data = await response.json();
+
+        if (!data || data.length === 0) {
+          container.innerHTML = '<div class="empty-state">لا توجد بلاغات مسجلة حتى الآن.</div>';
+          return;
+        }
+
+        container.innerHTML = '';
+        data.reverse().forEach(item => {
+          const reportElement = document.createElement('div');
+          reportElement.className = 'report-item';
+          reportElement.innerHTML = `
+            <div class="report-header">
+              <span class="report-order-id">طلب رقم: #${item.orderId}</span>
+              <span class="report-date">${item.date || ''}</span>
+            </div>
+            <div class="report-problem">${escapeHtml(item.problem)}</div>
+          `;
+          container.appendChild(reportElement);
+        });
+      } catch (error) {
+        container.innerHTML = '<div class="empty-state">تعذر تحميل البلاغات. يرجى المحاولة لاحقاً.</div>';
+      }
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
